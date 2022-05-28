@@ -11,7 +11,7 @@ WEB_URL = "https://howmanydayssincemontaguestreetbridgehasbeenhit.com"
 
 def run():
 
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Post to a discord webhook.')
     parser.add_argument(
         '--webhook',
         type=str,
