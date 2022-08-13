@@ -1,1 +1,4 @@
 discord-webhook
+beautifulsoup4
+dataclasses
+selenium
