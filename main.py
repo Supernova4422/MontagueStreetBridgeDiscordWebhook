@@ -1,18 +1,15 @@
-import urllib.request
-import json
-import pathlib
-from typing import Optional
-from discord_webhook import DiscordWebhook, DiscordEmbed
-from bs4 import BeautifulSoup
 import argparse
-from dataclasses import dataclass
-
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-
+import pathlib
 import re
+from dataclasses import dataclass
+from typing import Optional
+
+from bs4 import BeautifulSoup
+from discord_webhook import DiscordWebhook, DiscordEmbed
 from pyvirtualdisplay import Display
+from selenium import webdriver
+from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.firefox.service import Service
 
 FILENAME = "history.txt"
 API_URL = "https://howmanydayssincemontaguestreetbridgehasbeenhit.com/chumps.json"
@@ -27,7 +24,6 @@ class Entry:
     thumbnail: str
 
 def run():
-
     parser = argparse.ArgumentParser(description='Post to a discord webhook.')
     parser.add_argument(
         '--webhook',
@@ -37,7 +33,6 @@ def run():
     discord_url = args.webhook
 
     current_entry = get_current_entry()
-    current_entry = get_current_entry_2()
     current_date = current_entry.date
     last_date = get_last_date()
     if (last_date is not None):
@@ -47,18 +42,18 @@ def run():
     save_date(current_date)
     post(current_entry, discord_url)
 
-def get_current_entry_2() -> str:
+def get_current_entry() -> str:
     try:
         display = Display(visible=0, size=(1600, 1200))
         display.start()
-        driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver')
+        driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()))
         driver.get(WEB_URL)
         contents = driver.page_source
     finally:
-        try:
-            driver.close()
-        finally:
+        try :
             display.stop()
+        finally:
+            driver.close()
 
     soup = BeautifulSoup(contents)
 
@@ -79,18 +74,6 @@ def get_current_entry_2() -> str:
         thumbnail
     )
 
-    return entry
-
-def get_current_entry() -> str:
-    contents = urllib.request.urlopen(API_URL).read()
-    json_read = json.loads(contents)[0]
-    entry = Entry(
-        json_read["date_aus_string"],
-        json_read["chumps"][0]["name"],
-        json_read["chumps"][0]["url"],
-        json_read["thanks"],
-        WEB_URL + json_read["thumb"]
-    )
     return entry
 
 def get_last_date() -> Optional[str]:
