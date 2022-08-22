@@ -37,6 +37,7 @@ def run():
     last_date = get_last_date()
     if (last_date is not None):
         if current_date == last_date:
+            print("No new crash found.")
             return
 
     save_date(current_date)
@@ -117,5 +118,5 @@ if __name__ == "__main__":
     while True:
         try:
             run()
-        except:
+        finally:
             time.sleep(20 * 60)
