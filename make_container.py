@@ -70,7 +70,7 @@ if __name__ == "__main__":
         args=[
             "docker", "run",
             "--name", "{}".format(name),
-            "--shm-size" "2g",
+            "--shm-size", "2g",
             *list(itertools.chain(*list(map(lambda x: ("--env", x), args.set)))),
             "--restart", "always",
             "-d", "{}:{}".format(name, tag)],
