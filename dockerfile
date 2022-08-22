@@ -8,7 +8,7 @@ COPY . ${project_path}
 WORKDIR ${project_path}
 
 RUN apt-get -y update
-RUN apt install -y software-properties-common cron chromium-chromedriver chromium-browser xvfb curl firefox
+RUN apt install -y software-properties-common cron xvfb curl firefox firefox-geckodriver
 RUN add-apt-repository -y ppa:deadsnakes/ppa
 RUN apt-get -y update
 RUN apt-get -y install python3.11 python3.11-distutils python3.11-dev

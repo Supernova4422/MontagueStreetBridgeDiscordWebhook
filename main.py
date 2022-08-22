@@ -8,9 +8,7 @@ from bs4 import BeautifulSoup
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from pyvirtualdisplay import Display
 from selenium import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver import FirefoxOptions
 
 FILENAME = "history.txt"
 API_URL = "https://howmanydayssincemontaguestreetbridgehasbeenhit.com/chumps.json"
@@ -47,7 +45,9 @@ def get_current_entry() -> str:
     try:
         display = Display(visible=0, size=(1600, 1200))
         display.start()
-        driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()))
+        opts = FirefoxOptions()
+        opts.add_argument("--headless")
+        driver = webdriver.Firefox(options=opts)
         driver.get(WEB_URL)
         contents = driver.page_source
     finally:
