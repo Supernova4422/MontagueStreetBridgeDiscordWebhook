@@ -2,6 +2,7 @@ import argparse
 import pathlib
 import re
 from dataclasses import dataclass
+from time import time
 from typing import Optional
 
 from bs4 import BeautifulSoup
@@ -113,4 +114,8 @@ def post(entry: Entry, discord_url: str):
     response = webhook.execute()
 
 if __name__ == "__main__":
-    run()
+    while True:
+        try:
+            run()
+        except:
+            time.sleep(20 * 60)
