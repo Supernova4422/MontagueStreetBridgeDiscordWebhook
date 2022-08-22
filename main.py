@@ -2,7 +2,7 @@ import argparse
 import pathlib
 import re
 from dataclasses import dataclass
-from time import time
+from time import sleep
 from typing import Optional
 
 from bs4 import BeautifulSoup
@@ -117,4 +117,4 @@ def post(entry: Entry, discord_url: str):
 if __name__ == "__main__":
     while True:
         run()
-        time.sleep(20 * 60)
+        sleep(20 * 60)
