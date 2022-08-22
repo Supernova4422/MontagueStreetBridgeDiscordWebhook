@@ -17,3 +17,4 @@ RUN python3.11 get-pip.py
 RUN python3.11 -m pip install -r requirements.txt
 RUN (crontab -l ; echo "${cronjob}")| crontab -
 RUN service cron reload
+CMD "cron" "-f"
