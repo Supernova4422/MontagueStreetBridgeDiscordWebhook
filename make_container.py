@@ -68,8 +68,9 @@ if __name__ == "__main__":
 
     subprocess.run(
         args=[
-            "docker", "run",
+            "docker", "run", "-dit",
             "--name", "{}".format(name),
+            "--memory", "1024mb",
             "--shm-size", "2g",
             *list(itertools.chain(*list(map(lambda x: ("--env", x), args.set)))),
             "--restart", "always",

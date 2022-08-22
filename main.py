@@ -9,6 +9,7 @@ from discord_webhook import DiscordWebhook, DiscordEmbed
 from pyvirtualdisplay import Display
 from selenium import webdriver
 from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.firefox.service import Service
 
 FILENAME = "history.txt"
@@ -51,9 +52,9 @@ def get_current_entry() -> str:
         contents = driver.page_source
     finally:
         try :
-            display.stop()
-        finally:
             driver.close()
+        finally:
+            display.stop()
 
     soup = BeautifulSoup(contents)
 
