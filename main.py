@@ -116,7 +116,5 @@ def post(entry: Entry, discord_url: str):
 
 if __name__ == "__main__":
     while True:
-        try:
-            run()
-        finally:
-            time.sleep(20 * 60)
+        run()
+        time.sleep(20 * 60)
