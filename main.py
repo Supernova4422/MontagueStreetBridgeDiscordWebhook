@@ -115,6 +115,5 @@ def post(entry: Entry, discord_url: str):
     response = webhook.execute()
 
 if __name__ == "__main__":
-    while True:
-        run()
-        sleep(20 * 60)
+    run()
+    sleep(20 * 60)
