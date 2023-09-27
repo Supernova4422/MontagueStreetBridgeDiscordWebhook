@@ -1,29 +1,52 @@
+import urllib.request
 import argparse
+import requests
 import pathlib
 import re
-from dataclasses import dataclass
+import json
 from time import sleep
 from typing import Optional
-
-from bs4 import BeautifulSoup
-from discord_webhook import DiscordWebhook, DiscordEmbed
-from pyvirtualdisplay import Display
-from selenium import webdriver
-from selenium.webdriver import FirefoxOptions
 
 FILENAME = "history.txt"
 API_URL = "https://howmanydayssincemontaguestreetbridgehasbeenhit.com/chumps.json"
 WEB_URL = "https://howmanydayssincemontaguestreetbridgehasbeenhit.com"
 
-@dataclass
 class Entry:
-    date: str
-    chump_name: str
-    chump_url: str
-    thanks: str
-    thumbnail: str
+    def __init__(self, date: str, chump_name: str, chump_url: str, thanks: str, thumbnail: str):
+        self.date = date
+        self.chump_name = chump_name
+        self.chump_url = chump_url
+        self.thanks = thanks
+        self.thumbnail = thumbnail
+
+    def to_json(self) -> str:
+        embed = {
+            "title": self.chump_name,
+            "description": WEB_URL,
+            "fields": [
+                { 
+                    "name": self.date,
+                    "value": self.chump_url
+                },
+            ],
+            "image": {
+                "url": self.thumbnail
+            }
+        }
+
+        # entry.thanks is unsused!!!
+
+        result = {
+            "embeds" : [
+                embed
+            ]
+        }
+        
+        return result
+
 
 def run():
+    print("Starting")
     parser = argparse.ArgumentParser(description='Post to a discord webhook.')
     parser.add_argument(
         '--webhook',
@@ -31,7 +54,6 @@ def run():
         help='Webhook URL for posting to discord')
     args = parser.parse_args()
     discord_url = args.webhook
-
     current_entry = get_current_entry()
     current_date = current_entry.date
     last_date = get_last_date()
@@ -40,41 +62,34 @@ def run():
             print("No new crash found.")
             return
 
-    save_date(current_date)
+    print("New crash found")
     post(current_entry, discord_url)
+    save_date(current_date)
 
 def get_current_entry() -> str:
-    try:
-        display = Display(visible=0, size=(1600, 1200))
-        display.start()
-        opts = FirefoxOptions()
-        opts.add_argument("--headless")
-        driver = webdriver.Firefox(options=opts)
-        driver.get(WEB_URL)
-        contents = driver.page_source
-    finally:
-        try :
-            driver.close()
-        finally:
-            display.stop()
+    print("fetching")
+    contents = str(urllib.request.urlopen(WEB_URL).read())
 
-    soup = BeautifulSoup(contents)
+    src_pattern = r'<script\s+src="([^"]+)">'
+    print("parsing")
+    src_attributes = re.findall(src_pattern, contents)
 
-    splitter = "As of "
+    print("fetching again")
+    js = WEB_URL + src_attributes[1]
+    contents = urllib.request.urlopen(js).read().decode("utf-8")
 
-    found: str = soup.find(text=re.compile('^{}.*'.format(splitter)))
-    date = found.split(splitter)[1]
-    img = soup.find("img", {"src": "/images/ribbon.png"})
-    thumbnail =WEB_URL + img.next_sibling['src']
-    chump = img.parent.parent.next_sibling.text
-    chump_url = img.parent.parent.next_sibling.find("a")['href']
+    print("splitting")
+    entry_1 = contents.split("e.exports=JSON.parse('[")[1].split(',{"date"')[0]
+    entry_1 = entry_1.replace("\\\'", "'")
+
+    json_entry = json.loads(entry_1)
 
     entry = Entry(
-        date,
-        chump,
-        chump_url,
-        "",
-        thumbnail
+        json_entry["date"],
+        json_entry.get("chumps", [{}])[0].get("name", ""),
+        json_entry.get("chumps", [{}])[0].get("url", ""),
+        json_entry.get("thanks", ""),
+        (WEB_URL + json_entry.get("image", "")) if "image" in json_entry else ""
     )
 
     return entry
@@ -93,27 +108,16 @@ def save_date(date: str):
         f.write(date)
 
 def post(entry: Entry, discord_url: str):
-    webhook = DiscordWebhook(
-        url=discord_url,
-        rate_limit_retry=True,
-    )
-    embed = DiscordEmbed(
-        title=entry.chump_name,
-        description=WEB_URL
-    )
-    embed.set_image(url=entry.thumbnail)
-
-    if entry.thanks != "":
-        embed.set_footer(text=entry.thanks)
-
-    embed.add_embed_field(
-        name=entry.date,
-        value=entry.chump_url
-    )
-
-    webhook.add_embed(embed)
-    response = webhook.execute()
+    print(discord_url)
+    data = entry.to_json()
+    result = requests.post(discord_url, json = data)
+    result.raise_for_status()
 
 if __name__ == "__main__":
-    run()
-    sleep(20 * 60)
+    try:
+        run()
+    except Exception as e:
+        print(e)
+    finally:
+        print("sleeping")
+        sleep(20 * 60)
