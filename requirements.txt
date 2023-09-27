@@ -1,6 +1,1 @@
-discord-webhook
-beautifulsoup4
-dataclasses
-selenium
-webdriver-manager
-pyvirtualdisplay
+requests
