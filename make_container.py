@@ -14,16 +14,9 @@ if __name__ == "__main__":
         "--name", metavar='N', type=str, required=True,
         help="An identifier for the container.")
 
-    parser.add_argument("--set",
-                        metavar="KEY=VALUE",
-                        nargs='+',
-                        help="Set environment variables for the docker "
-                            "container using format key=value(do not put "
-                            "spaces before or after the = sign). "
-                            "If a value contains spaces, you should define "
-                            "it with double quotes: "
-                            "foo=\"this is a sentence\". Note that "
-                            "values are always treated as strings.")
+    parser.add_argument(
+        "--webhook", metavar='N', type=str, required=True,
+        help="Webhook to discord")
 
     args = parser.parse_args()
     name = args.name
@@ -70,9 +63,7 @@ if __name__ == "__main__":
         args=[
             "docker", "run", "-dit",
             "--name", "{}".format(name),
-            "--memory", "1024mb",
-            "--shm-size", "2g",
-            *list(itertools.chain(*list(map(lambda x: ("--env", x), args.set)))),
+            "--env", ("webhook=" + args.webhook),
             "--restart", "always",
             "-d", "{}:{}".format(name, tag)],
         check=True
