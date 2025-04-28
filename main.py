@@ -68,27 +68,18 @@ def run():
 
 def get_current_entry() -> str:
     print("fetching")
-    contents = str(urllib.request.urlopen(WEB_URL).read())
+    request = urllib.request.Request(API_URL, headers={'User-Agent': 'Mozilla/5.0'})
+    urlopen = urllib.request.urlopen(request)
+    readContents = urlopen.read()
+    contents = readContents.decode("utf-8")
 
-    src_pattern = r'<script\s+src="([^"]+)">'
-    print("parsing")
-    src_attributes = re.findall(src_pattern, contents)
-
-    print("fetching again")
-    js = WEB_URL + src_attributes[1]
-    contents = urllib.request.urlopen(js).read().decode("utf-8")
-
-    print("splitting")
-    entry_1 = contents.split("e.exports=JSON.parse('[")[1].split(',{"date"')[0]
-    entry_1 = entry_1.replace("\\\'", "'")
-
-    json_entry = json.loads(entry_1)
+    json_entry = json.loads(contents)[0]
 
     entry = Entry(
         json_entry["date"],
-        json_entry.get("chumps", [{}])[0].get("name", ""),
-        json_entry.get("chumps", [{}])[0].get("url", ""),
-        json_entry.get("thanks", ""),
+        json_entry["name"],
+        json_entry["url"] if "url" in json_entry else "",
+        json_entry["thanks"] if "thanks" in json_entry else "",
         (WEB_URL + json_entry.get("image", "")) if "image" in json_entry else ""
     )
 
